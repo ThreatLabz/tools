@@ -1,4 +1,4 @@
-# Decryption code for network communication
+// Decryption code for network communication
 
 #include <Windows.h>
 #include <stdio.h>
@@ -36,7 +36,6 @@ VOID Decrypt(BYTE data[], BYTE key[]) {
     BYTE *layer1DecryptedData = (BYTE*)malloc(encryptedDataSize);
     for (UINT dataIndex = 0; dataIndex < encryptedDataSize; dataIndex++) {
         layer1DecryptedData[dataIndex] = encryptedData[dataIndex] ^ XORKey[dataIndex % XORKeySize];
-
     }
 
     BYTE swapByte = 0;
@@ -50,7 +49,6 @@ VOID Decrypt(BYTE data[], BYTE key[]) {
         key[calKeyIndex] = swapByte;
         finalKeyIndex = key[index] + key[calKeyIndex];
         printf("%c ", layer1DecryptedData[index - 1] ^ key[finalKeyIndex]);
-
     }
 }
 
