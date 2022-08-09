@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+
+# Author: Zscaler ThreatLabz
+# Description: This is a proof-of-concept tool to decrypt files (with a victim's Curve25519 private key) that are encrypted by the BlackByte v2 Go-based ransomware family
+# Blog reference: https://www.zscaler.com/blogs/security-research/analysis-blackbyte-ransomwares-go-based-variants
+# Follow us on Twitter: @ThreatLabz
+
 import base64
 import hashlib
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PublicKey

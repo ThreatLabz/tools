@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+
+# Author: Zscaler ThreatLabz
+# Description: This is a proof-of-concept tool to decrypt files (with the fake PNG file delivered from the C2 server) that are encrypted by the BlackByte v1 Go-based ransomware family
+# Blog reference: https://www.zscaler.com/blogs/security-research/analysis-blackbyte-ransomwares-go-based-variants
+# Follow us on Twitter: @ThreatLabz
+
 import os, binascii
 from hashlib import pbkdf2_hmac
 from Crypto.Cipher import AES
