@@ -1,4 +1,9 @@
-// Decryption code for network communication
+/************************************
+* Author: Zscaler ThreatLabz
+* Description: This is a proof-of-concept tool to decrypt EvilNum network communications
+* Blog reference: https://www.zscaler.com/blogs/security-research/return-evilnum-apt-updated-ttps-and-new-targets
+* Follow us on Twitter: @ThreatLabz
+************************************/
 
 #include <Windows.h>
 #include <stdio.h>

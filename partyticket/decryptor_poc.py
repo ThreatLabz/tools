@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+
+# Author: Zscaler ThreatLabz
+# Description: This is a proof-of-concept tool to decrypt files (without the victim's RSA private key!) that are encrypted by the PartyTicket ransomware family
+# Blog reference: https://www.zscaler.com/blogs/security-research/technical-analysis-partyticket-ransomware
+# Follow us on Twitter: @ThreatLabz
+
 import sys
 from Crypto.Cipher import AES
 
