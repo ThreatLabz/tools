@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+# Author: Zscaler ThreatLabz
+# Description: This is a proof-of-concept tool to decrypt files (with a victim's RSA private key) that are encrypted by Industrial Spy ransomware
+# Blog reference: https://www.zscaler.com/blogs/security-research/technical-analysis-industrial-spy-ransomware
+# Follow us on Twitter: @ThreatLabz
+
 import os
 import rsa
 import logging
