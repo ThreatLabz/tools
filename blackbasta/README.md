@@ -9,4 +9,4 @@ BlackBastaDecryptor: Decrypted Chacha params: 0x697f1f886b115c2c5dd849652afa35c9
 BlackBastaDecryptor: Chacha key: 697f1f886b115c2c5dd849652afa35c9b0b0f82a642b76c03b30be502b9181b4
 BlackBastaDecryptor: Chacha nonce: b8043a9f07ab7498
 BlackBastaDecryptor: Original filesize: 7005
-BlackBastaDecryptor: Saving decrypted file to Eula.txt
+BlackBastaDecryptor: Saving decrypted file to Eula.txt`
