@@ -38,7 +38,6 @@ mjhoddxzwopcte.net
 This tool can be used to generate the import hashes used by the Ares banking trojan. The algorithm uses a modified CRC64 hash with a custom alphanumeric mapping.
 
 ### Usage
-% python3 ares_imports.py -h
 usage: ares_imports.py --f [function_name]
 
 optional arguments:
