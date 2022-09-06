@@ -43,7 +43,6 @@ usage: ares_imports.py --f [function_name]
 optional arguments:
   -h, --help            show this help message and exit
   -f FUNCTION_NAME, --function-name FUNCTION_NAME
-                        function_name
 
 ### Example
 ```

@@ -55,7 +55,7 @@ def CRC64digest(aString):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(usage="%(prog)s --f [function_name]")
     parser.add_argument("-f", "--function-name",
-                        help="function_name", required=True)
+                        required=True)
     args = parser.parse_args()
 
     digest = CRC64digest(args.function_name)
