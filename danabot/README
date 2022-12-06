@@ -1,0 +1,10 @@
+Reference samples:
+
+- 1bb79932aad07fb2284cf0715b179a6a662879a13b82e01bdf815447c7835d91 
+- 4b806922bf6c1953d52d334f4aeef71744ed77e9c531e6247287a8bc4454228a
+- 8c6224d9622b929e992500cb0a75025332c9cf901b3a25f48de6c87ad7b67114
+
+- Run the IDA scripts in numerical order
+- Before running the next script, let ida finish its analysis
+- Some of the scripts can be run multiple times as new code is discovered by IDA
+- Feedback and/or ideas for additional scripts ?
