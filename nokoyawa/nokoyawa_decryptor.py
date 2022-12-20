@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Author: Zscaler ThreatLabz
-# Description: This is a proof-of-concept tool to decrypt files (with a victim's Curve25519 private key) that are encrypted by Nokoyawa ransomware 2.0
+# Description: This is a proof-of-concept tool to decrypt files (with a victim's Curve25519 private key) that are encrypted by the Rust-based Nokoyawa ransomware 2.0
 # Blog reference: https://www.zscaler.com/blogs/security-research/nokoyawa-ransomware-rust-or-bust
 # Follow us on Twitter: @ThreatLabz
 

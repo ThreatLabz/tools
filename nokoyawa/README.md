@@ -1,7 +1,7 @@
-# Nokoyawa Ransomware Decryption tool
+# Nokoyawa Ransomware 2.0 Decryption tool
 
 # Description
-This is a proof-of-concept decryptor for Nokoyawa ransomware. Note the Curve25519 private key is required to decrypt files.
+This is a proof-of-concept decryptor for the Rust-based variant of Nokoyawa ransomware. Note the Curve25519 private key is required to decrypt files.
 
 # Usage
 usage: nokoyawa_decryptor.py [-h] --path PATH -k PRIVATEKEY [--debug]
