@@ -1,4 +1,4 @@
-# BlackBasta Ransomware Decryption tool
+# BlackBasta Ransomware Decryption Tool
 
 # Description
 This is a proof-of-concept decryptor for BlackBasta ransomware. Note the RSA private key is required to decrypt files.
