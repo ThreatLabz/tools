@@ -1,4 +1,4 @@
-// Author: Zscaler ThreatLabz
+// Author: Niraj Shivtarkar from Zscaler ThreatLabz
 // Description: This is a C# based tool for analyzing malicious Microsoft OneNote documents
 // Reference blog: https://www.zscaler.com/blogs/security-research/onenote-growing-threat-malware-distribution
 // Follow us on Twitter: @ThreatLabz
