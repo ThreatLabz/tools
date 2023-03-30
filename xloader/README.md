@@ -1,10 +1,8 @@
 # Xloader IDA Decryption Tool for Encrypted Code
 
-**Xloader** (previously Formbook) utilizes numerous encryption layers to obfuscate critical sections of the stealer's code and data.
+**Xloader** (previously Formbook) utilizes numerous encryption layers to [obfuscate critical sections of the stealer's code and data](https://www.zscaler.com/blogs/security-research/technical-analysis-xloaders-code-obfuscation-version-43). 
 
-Xloader **version 4.3** [analyzed by ThreatLabz](https://www.zscaler.com/blogs/security-research/technical-analysis-xloaders-code-obfuscation-version-43) improved upon the obfuscation with additional encryption layers.
-
-ThreatLabz has created an IDA Python script to decrypt code for recent versions of Xloader and have tested with the most version 4.3 samples. Once executed, the script will search for encrypted functions and will attempt to decrypt them, overwriting encrypted data with the original code in the disassembly.
+ThreatLabz has created an IDA Python script to remove Xloader's encryption layers for recent samples including the latest version 4.3. Once executed, the script will search for encrypted functions and will attempt to decrypt them, overwriting encrypted data with the original code in the disassembly.
 
 # Example (Packed) Xloader Samples
 
