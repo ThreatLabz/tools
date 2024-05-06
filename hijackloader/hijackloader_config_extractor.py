@@ -1,4 +1,4 @@
-import struct,lznt1, sys
+import struct, lznt1, sys
 import argparse
 
 
