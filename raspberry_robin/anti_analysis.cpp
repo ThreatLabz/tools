@@ -13,6 +13,9 @@ void monitorThread()
 	}
 }
 
+/*
+Note: The expected minimum return value for the method above might vary from sample to sample. For example, recent samples have increased this variable.
+*/
 int main(int argc, char** argv)
 {
 	const unsigned int successfullMeasurementLimit = 6;
@@ -43,7 +46,7 @@ int main(int argc, char** argv)
 		size_t readLoopCounter = 0;
 		size_t loopMemoryReadBytesSum = 0;
 		unsigned int beforeReadMemoryThreadCounter = globalThreadCounter;
-		while(readLoopCounter < readSize)
+		while (readLoopCounter < readSize)
 		{
 			unsigned char memoryByte = allocatedMemory[readLoopCounter];
 			readLoopCounter += 1;
@@ -52,7 +55,7 @@ int main(int argc, char** argv)
 		unsigned int afterReadMemoryThreadCounter = (globalThreadCounter - beforeReadMemoryThreadCounter) >> 4;
 		unsigned int result = 0;
 		if (expectedReadMemoryBytesSum == loopMemoryReadBytesSum && afterWriteMemoryThreadCounter)
-		{ 
+		{
 			result = afterReadMemoryThreadCounter / afterWriteMemoryThreadCounter;
 		}
 		if (result >= successfullMeasurementLimit)
@@ -62,12 +65,11 @@ int main(int argc, char** argv)
 	VirtualFree(allocatedMemory, 0, MEM_RELEASE);
 	if (successFullAttempts >= successfullAttemptsLimit)
 	{
-		printf(“Detection passed successfully\n”);
+		printf("Detection passed successfully\n");
 	}
 	else
 	{
-		printf(“Failed to pass detection\n”);
+		printf("Failed to pass detection\n");
 	}
 	return 0;
-} 
-
+}
