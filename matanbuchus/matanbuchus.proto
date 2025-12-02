@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package matabanchus;
+
+message matanbuchus_cmd_response {
+    optional bool unknown = 1;
+    repeated network_command net_cmd = 2;
+}
+
+message network_command {
+    optional bytes task_id = 1;
+    optional int32 cmd_id = 2;
+    optional bytes cmd_data = 3;
+}
+
+message cmd_0 {
+    optional bytes payload_url = 1;
+    optional int32 execution_type = 2;
+    optional bool is_payload_encrypted = 3;
+    optional bytes file_parameters = 4;
+}
+
+message cmd_1 {
+    optional bytes payload_url = 1;
+    optional int32 execution_type = 2;
+    optional bool is_payload_encrypted = 3;
+    optional bytes filename = 4;
+}
+
+message cmd_2 {
+    optional bytes payload_url = 1;
+    optional bool is_payload_encrypted = 2;
+}
+
+message cmd_3 {
+    optional bytes payload_data = 1;
+    optional int32 execution_type = 2;
+}
+
+message cmd_4 {
+    optional bytes zip_payload_url = 1;
+    optional bool is_payload_encrypted = 2;
+}
+
+message network_command_reporting{
+    optional bytes bot_id = 1;
+    optional bytes task_id = 2;
+    optional bytes command_output = 3;
+}
+
+message get_cmd {
+    optional bytes bot_id = 1;
+}
+
+message register_response{
+    optional bool unknown_1 = 1;
+    optional bool unknown_2 = 2;
+    optional bytes shellcode_for_persistence = 3;
+}
+
+message register_request_packet {
+    optional bytes bot_id = 1;
+    optional bytes hostname = 2;
+    optional bytes username = 3;
+    optional bytes dns_domain = 4;
+    optional int32 windows_major_version = 5;
+    optional int32 windows_minor_version = 6;
+    optional int32 windows_build_number = 7;
+    optional bool is_windows_server = 8;
+    optional bool is_wow64 = 9;
+    optional bool is_admin = 10;
+    optional bytes campaign_id = 11;
+    optional bytes edr_list = 12;
+}
+
+message get_processes_command_packet {
+    repeated bytes processes = 1;
+}
+
+message get_installed_apps_command_packet {
+    repeated bytes apps = 1;
+}
+
+message get_installed_services_command_packet {
+    repeated bytes services = 1;
+}
+
+message get_windows_hotfixes_command_packet {
+    repeated bytes windows_hotfixes = 1;
+}
