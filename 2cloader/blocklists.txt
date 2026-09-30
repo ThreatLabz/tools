@@ -1,0 +1,47 @@
+Blocklisted loaded-module - sbiedll.dll, cmdvrt32.dll, cmdvrt64.dll, cuckoomon.dll, pstorec.dll, snxhk.dll, sxin.dll, sf2.dll, avghooka.dll, avghookx.dll
+
+Blocklisted process name - vmtoolsd.exe, VBoxService.exe, VBoxTray.exe, prl_tools.exe, xenservice.exe, qemu-ga.exe, vboxcontrol.exe, vboxservice.exe
+
+Blocklisted MAC address prefix
+08:00:27 - VirtualBox
+00:05:69 - VMware
+00:0C:29 - VMware
+00:1C:14 - VMware
+00:50:56 - VMware
+00:1C:42 - Parallels
+00:16:3E - Xen
+
+Blocklisted registry keys
+HKLM\SOFTWARE\Oracle\VirtualBox
+HKLM\SOFTWARE\VMware
+HKLM\SOFTWARE\Wine
+HKLM\SYSTEM\CurrentControlSet\Services\VBoxGuest
+HKLM\SYSTEM\CurrentControlSet\Services\VBoxSF
+HKLM\SYSTEM\CurrentControlSet\Services\vmci
+HKLM\SYSTEM\CurrentControlSet\Services\vmhgfs
+
+Blocklisted usernames
+sandbox
+malware
+virus
+sample
+test
+john
+user
+admin
+currentuser
+emily
+hapubws
+default
+
+
+Blocklisted computernames
+sandbox
+malware
+virus
+sample
+analysis
+cuckoo
+anubis
+
+
